@@ -44,9 +44,13 @@ namespace HomeApi.Data.Repos
         /// </summary>
         public async Task<Device> GetDeviceById(Guid id)
         {
-            return await _context.Devices
-                .Include( d => d.Room)
-                .Where(d => d.Id == id).FirstOrDefaultAsync();
+            var device = await _context.Devices
+                .Include(d => d.Room)
+                .Where(d => d.Id == id)
+                .FirstOrDefaultAsync();
+
+            Console.WriteLine(device == null ? "Не найдено" : $"Найдено: {device.Name}");
+            return device;
         }
         
         /// <summary>
@@ -54,16 +58,12 @@ namespace HomeApi.Data.Repos
         /// </summary>
         public async Task SaveDevice(Device device, Room room)
         {
+            _context.Rooms.Attach(room);  // EF Core понимает, что это существующая сущность
             // Привязываем новое устройство к соответствующей комнате перед сохранением
             device.RoomId = room.Id;
             device.Room = room;
             
-            // Добавляем в базу 
-            var entry = _context.Entry(device);
-            if (entry.State == EntityState.Detached)
-                await _context.Devices.AddAsync(device);
-            
-            // Сохраняем изменения в базе 
+            await _context.Devices.AddAsync(device);
             await _context.SaveChangesAsync();
         }
 
@@ -72,23 +72,21 @@ namespace HomeApi.Data.Repos
         /// </summary>
         public async Task UpdateDevice(Device device, Room room, UpdateDeviceQuery query)
         {
-            // Привязываем новое устройство к соответствующей комнате перед сохранением
-            device.RoomId = room.Id;
-            device.Room = room;
-
-            // Если в запрос переданы параметры для обновления - проверяем их на null
-            // И если нужно - обновляем устройство
+            device.RoomId = room.Id; // ссылка по ключу
+            
             if (!string.IsNullOrEmpty(query.NewName))
                 device.Name = query.NewName;
             if (!string.IsNullOrEmpty(query.NewSerial))
                 device.SerialNumber = query.NewSerial;
+            if (!string.IsNullOrEmpty(query.NewManufacturer))
+                device.Manufacturer = query.NewManufacturer;
             
-            // Добавляем в базу 
-            var entry = _context.Entry(device);
-            if (entry.State == EntityState.Detached)
-                _context.Devices.Update(device);
+            // Неподходящий вариант
+            // var entry = _context.Entry(device);
+            // if (entry.State == EntityState.Detached)
+            //     _context.Devices.Update(device);
             
-            // Сохраняем изменения в базе 
+            _context.Devices.Update(device); // обновляем Device
             await _context.SaveChangesAsync();
         }
 
@@ -98,6 +96,28 @@ namespace HomeApi.Data.Repos
         public async Task DeleteDevice(Device device)
         {
             _context.Devices.Remove(device);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task PutDevice(Device device, Room room, UpdateDeviceQuery query)
+        {
+            device.RoomId = room.Id; // ссылка по ключу
+            
+            if (!string.IsNullOrEmpty(query.NewName))
+                device.Name = query.NewName;
+            if (!string.IsNullOrEmpty(query.NewSerial))
+                device.SerialNumber = query.NewSerial;
+            if (!string.IsNullOrEmpty(query.NewRoomLocation))
+                device.Location = query.NewRoomLocation;
+            if (!string.IsNullOrEmpty(query.NewModel))
+                device.Model = query.NewModel;
+            if (!string.IsNullOrEmpty(query.NewManufacturer))
+                device.Manufacturer = query.NewManufacturer;
+            if (!int.IsNegative(query.NewCurrentVolts))
+                device.CurrentVolts = query.NewCurrentVolts;
+            device.GasUsage = query.NewGasUsage;
+            
+            _context.Devices.Update(device); // обновляем Device
             await _context.SaveChangesAsync();
         }
     }

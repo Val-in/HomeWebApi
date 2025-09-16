@@ -1,5 +1,4 @@
-﻿using System;
-using HomeApi.Data.Models;
+﻿using HomeApi.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using DbContext = Microsoft.EntityFrameworkCore.DbContext;
 
@@ -11,9 +10,7 @@ namespace HomeApi.Data
         public DbSet<Device> Devices { get; set; }
         
         public HomeApiContext(DbContextOptions<HomeApiContext> options)  : base(options)
-        {
-            Database.EnsureCreated();
-        }
+        { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

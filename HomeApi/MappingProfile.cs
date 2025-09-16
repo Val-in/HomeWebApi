@@ -24,10 +24,13 @@ namespace HomeApi
             
             // Валидация запросов:
             CreateMap<AddDeviceRequest, Device>()
-                .ForMember(d => d.Location,
-                    opt => opt.MapFrom(r => r.RoomLocation));
+                .ForMember(d => d.Location, opt => opt.MapFrom(r => r.RoomLocation))
+                .ForMember(d => d.Id, opt => opt.Ignore()); 
             CreateMap<AddRoomRequest, Room>();
             CreateMap<Device, DeviceView>();
+            
+            CreateMap<Room, RoomView>()
+                .ForMember(dest => dest.Area, opt => opt.MapFrom(src => src.Area.ToString()));
         }
     }
 }

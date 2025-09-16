@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using HomeApi.Contracts.Models.Rooms;
 using HomeApi.Data.Models;
@@ -22,14 +24,27 @@ namespace HomeApi.Controllers
             _repository = repository;
             _mapper = mapper;
         }
-        
-        //TODO: Задание - добавить метод на получение всех существующих комнат
-        
+
+        /// <summary>
+        /// Получение всех комнат
+        /// </summary>
+        [HttpGet("getRooms")]
+        public async Task<IActionResult> GetRooms()
+        {
+            var rooms = await _repository.GetAllRooms();
+            if (rooms == null || !rooms.Any())
+                return NotFound("Нет комнат.");
+            
+            var roomViews = _mapper.Map<RoomView[]>(rooms);
+
+            return Ok(roomViews);
+        }
+
+
         /// <summary>
         /// Добавление комнаты
         /// </summary>
-        [HttpPost] 
-        [Route("")] 
+        [HttpPost("addRoom")]
         public async Task<IActionResult> Add([FromBody] AddRoomRequest request)
         {
             var existingRoom = await _repository.GetRoomByName(request.Name);

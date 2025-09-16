@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using HomeApi.Data.Models;
 
 namespace HomeApi.Data.Repos
@@ -10,5 +11,7 @@ namespace HomeApi.Data.Repos
     {
         Task<Room> GetRoomByName(string name);
         Task AddRoom(Room room);
+        Task<IEnumerable<Room>> GetAllRooms();
+        Task DeleteRoom(Room room);
     }
 }

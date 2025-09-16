@@ -7,7 +7,7 @@ namespace HomeApi.Data.Models
     public class Device
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public DateTime AddDate { get; set; } = DateTime.Now;
+        public DateTime AddDate { get; set; } = DateTime.UtcNow;
         public string Name { get; set; }
         public string Manufacturer { get; set; }
         public string Model { get; set; }

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HomeApi.Controllers
 {
     /// <summary>
-    /// Контроллер устройсив
+    /// Контроллер устройств
     /// </summary>
     [ApiController]
     [Route("[controller]")]
@@ -31,7 +31,7 @@ namespace HomeApi.Controllers
         /// Просмотр списка подключенных устройств
         /// </summary>
         [HttpGet] 
-        [Route("")] 
+        [Route("getDevices")] 
         public async Task<IActionResult> GetDevices()
         {
             var devices = await _devices.GetDevices();
@@ -51,7 +51,7 @@ namespace HomeApi.Controllers
         /// Добавление нового устройства
         /// </summary>
         [HttpPost] 
-        [Route("")] 
+        [Route("addDevices")] 
         public async Task<IActionResult> Add( AddDeviceRequest request )
         {
             var room = await _rooms.GetRoomByName(request.RoomLocation);
@@ -76,7 +76,7 @@ namespace HomeApi.Controllers
         public async Task<IActionResult> Edit(
             [FromRoute] Guid id,
             [FromBody]  EditDeviceRequest request)
-        {
+        { 
             var room = await _rooms.GetRoomByName(request.NewRoom);
             if(room == null)
                 return StatusCode(400, $"Ошибка: Комната {request.NewRoom} не подключена. Сначала подключите комнату!");
@@ -92,10 +92,55 @@ namespace HomeApi.Controllers
             await _devices.UpdateDevice(
                 device,
                 room,
-                new UpdateDeviceQuery(request.NewName, request.NewSerial)
+                new UpdateDeviceQuery(request.NewName, request.NewSerial, request.NewManufacturer)
             );
 
             return StatusCode(200, $"Устройство обновлено! Имя - {device.Name}, Серийный номер - {device.SerialNumber},  Комната подключения - {device.Room.Name}");
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
+        {
+            var device = await _devices.GetDeviceById(id);
+            if (device == null)
+                return StatusCode(400, $"Ошибка: Устройство с идентификатором {id} не существует.");
+            
+            await _devices.DeleteDevice(device);
+            return StatusCode(200, $"Устройство с идентификатором {id} удалено!");
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> PutUpdate([FromRoute] Guid id, [FromBody] PutDeviceRequest request)
+        {
+            var room = await _rooms.GetRoomByName(request.RoomLocation);
+            if(room == null)
+                return StatusCode(400, $"Ошибка: Комната {request.RoomLocation} не подключена. Сначала подключите комнату!");
+            
+            var device = await _devices.GetDeviceById(id);
+            if(device == null)
+                return StatusCode(400, $"Ошибка: Устройство с идентификатором {id} не существует.");
+            
+            var withSameName = await _devices.GetDeviceByName(request.Name);
+            if(withSameName != null)
+                return StatusCode(400, $"Ошибка: Устройство с именем {request.Name} уже подключено. Выберите другое имя!");
+            
+            await _devices.PutDevice(
+                device,
+                room,
+                new UpdateDeviceQuery(
+                    newName: request.Name,
+                    newSerial: request.SerialNumber,
+                    newManufacturer: request.Manufacturer,
+                    newModel: request.Model,
+                    newCurrentVolts: request.CurrentVolts,
+                    newGasUsage: request.GasUsage,
+                    newRoomLocation: request.RoomLocation
+                )
+            );
+
+            return StatusCode(200, $"Устройство {request.Name} обновлено!");
         }
     }
 }

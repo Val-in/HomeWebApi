@@ -8,7 +8,7 @@
         public static string [] ValidRooms = new  []
         {
             "Кухня",
-            "Ванная",
+            "Ванна",
             "Гостиная",
             "Туалет"
         };

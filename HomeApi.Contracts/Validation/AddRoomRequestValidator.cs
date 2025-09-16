@@ -5,6 +5,8 @@ namespace HomeApi.Contracts.Validation
 {
     /// <summary>
     /// Класс-валидатор запросов на добавление новой комнаты
+    /// NotEmpty() для bool считается false пустым, поэтому false не проходит.
+    /// NotNull() для bool? проверяет только null.
     /// </summary>
     public class AddRoomRequestValidator : AbstractValidator<AddRoomRequest>
     {
@@ -13,7 +15,7 @@ namespace HomeApi.Contracts.Validation
             RuleFor(x => x.Area).NotEmpty(); 
             RuleFor(x => x.Name).NotEmpty();
             RuleFor(x => x.Voltage).NotEmpty();
-            RuleFor(x => x.GasConnected).NotEmpty();
+            RuleFor(x => x.GasConnected).NotNull();
         }
     }
 }
